@@ -1,0 +1,62 @@
+[
+  {
+    "name": "set_timer",
+    "description": "Set a countdown timer when a duration (minutes, seconds, hours) is stated.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "time_human": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "The duration copied word for word, e.g. '10 minutes', '90 seconds', '1 hour 30 minutes'."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Optional name for the timer; include only when the user names one."
+        }
+      },
+      "required": ["time_human"]
+    }
+  },
+  {
+    "name": "set_alarm",
+    "description": "Set an alarm or wake-up call when an explicit time of day is stated.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "time_human": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "The time of day copied word for word, e.g. '7:30 am', '8 pm', '6 am'."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Optional alarm label; include only when the user names one."
+        }
+      },
+      "required": ["time_human"]
+    }
+  },
+  {
+    "name": "create_todo",
+    "description": "Add a todo item, task, or undated reminder (like 'remind me to ...') in Google Tasks.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "The task or reminder description copied word for word."
+        }
+      },
+      "required": ["title"]
+    }
+  }
+]

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Microphone capture for Whistle 16 kHz speech-to-text -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Required for silent AlarmClock.ACTION_SET_TIMER and AlarmClock.ACTION_SET_ALARM -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+
+    <!-- Optional network access if user downloads .cact weights on-device -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Package visibility for Android 11+ (API 30+) -->
+    <queries>
+        <!-- Google Gemini Android app -->
+        <package android:name="com.google.android.apps.bard" />
+        <!-- Google Tasks Android app -->
+        <package android:name="com.google.android.apps.tasks" />
+
+        <!-- AlarmClock intents -->
+        <intent>
+            <action android:name="android.intent.action.SET_TIMER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".CactusAssistantApp"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_cactus_assistant"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_cactus_assistant"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CactusAssistant">
+
+        <!-- Main Dashboard & Assistant Settings Activity -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Digital Assistant Activity handling ACTION_ASSIST and voice search intents -->
+        <activity
+            android:name=".ui.AssistActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:theme="@style/Theme.CactusAssistant.Translucent"
+            android:turnScreenOn="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <action android:name="android.speech.action.VOICE_SEARCH_HANDS_FREE" />
+                <action android:name="android.speech.action.WEB_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="com.android.systemui.action_assist_icon"
+                android:resource="@drawable/ic_cactus_assistant" />
+        </activity>
+
+        <!-- Android Default Digital Assistant VoiceInteractionService -->
+        <service
+            android:name=".service.CactusVoiceInteractionService"
+            android:exported="true"
+            android:label="@string/assistant_service_label"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction_service" />
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+
+        <!-- VoiceInteractionSessionService managing the active assistant overlay session -->
+        <service
+            android:name=".service.CactusVoiceInteractionSessionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+
+        <!-- RecognitionService required by Android's VoiceInteractionService contract, backed by Whistle -->
+        <service
+            android:name=".service.CactusRecognitionService"
+            android:exported="true"
+            android:label="@string/recognition_service_label">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech"
+                android:resource="@xml/recognition_service" />
+        </service>
+
+    </application>
+
+</manifest>

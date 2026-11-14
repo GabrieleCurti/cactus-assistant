@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cactus_green">#10B981</color>
+    <color name="cactus_dark">#064E3B</color>
+    <color name="cactus_surface">#0F172A</color>
+    <color name="scrim_overlay">#80000000</color>
+</resources>

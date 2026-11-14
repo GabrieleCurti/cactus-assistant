@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cactus Assistant</string>
+    <string name="assistant_service_label">Cactus Whistle &amp; Needle 3 Assistant</string>
+    <string name="recognition_service_label">Cactus Whistle On-Device Speech Recognition</string>
+    <string name="assist_prompt_hint">Say a timer, alarm, todo, or ask anything…</string>
+    <string name="set_default_assistant">Set as Default Digital Assistant</string>
+</resources>
