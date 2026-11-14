@@ -26,6 +26,7 @@
 namespace {
 
 constexpr int kDefaultResponseBufferCapacity = 65536;
+constexpr int kTranscribeResponseBufferCapacity = 262144;
 
 struct MappedArchive {
     void* addr = nullptr;
@@ -285,8 +286,8 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeTranscribe(
     ScopedUtfChars lang(env, language);
     ScopedUtfChars kw(env, keywords);
 
-    std::vector<char> out_buf(kDefaultResponseBufferCapacity, '\0');
-    int written = cactus_transcribe(
+    std::vector<char> out_buf(kTranscribeResponseBufferCapacity, '\0');
+    int token_count = cactus_transcribe(
         pcm_ptr,
         static_cast<int>(num_samples),
         lang.get(),
@@ -298,19 +299,16 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeTranscribe(
 
     env->ReleaseFloatArrayElements(pcm_16k_mono, pcm_ptr, JNI_ABORT);
 
-    if (written < 0) {
+    if (token_count < 0) {
         const char* err = cactus_last_error();
-        LOGE("cactus_transcribe failed (%d): %s", written, err ? err : "unknown");
-        std::string err_json = MakeErrorJson(err ? err : "cactus_transcribe failed", written);
+        LOGE("cactus_transcribe failed (%d): %s", token_count, err ? err : "unknown");
+        std::string err_json = MakeErrorJson(err ? err : "cactus_transcribe failed", token_count);
         return env->NewStringUTF(err_json.c_str());
     }
 
-    if (written < static_cast<int>(out_buf.size())) {
-        out_buf[written] = '\0';
-    } else {
-        out_buf.back() = '\0';
-    }
-
+    // cactus_transcribe returns the decoded token count (not byte length) and
+    // already NUL-terminates the JSON written into out_buf.
+    out_buf.back() = '\0';
     return env->NewStringUTF(out_buf.data());
 }
 
@@ -330,7 +328,7 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeCompleteText(
     std::vector<char> out_buf(kDefaultResponseBufferCapacity, '\0');
     int tokens = max_new_tokens > 0 ? static_cast<int>(max_new_tokens) : 512;
 
-    int written = cactus_complete(
+    int token_count = cactus_complete(
         in_str.get(),
         nullptr,
         0,
@@ -339,18 +337,15 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeCompleteText(
         static_cast<int>(out_buf.size())
     );
 
-    if (written < 0) {
+    if (token_count < 0) {
         const char* err = cactus_last_error();
-        LOGE("cactus_complete(text) failed (%d): %s", written, err ? err : "unknown");
-        return env->NewStringUTF(MakeErrorJson(err ? err : "cactus_complete failed", written).c_str());
+        LOGE("cactus_complete(text) failed (%d): %s", token_count, err ? err : "unknown");
+        return env->NewStringUTF(MakeErrorJson(err ? err : "cactus_complete failed", token_count).c_str());
     }
 
-    if (written < static_cast<int>(out_buf.size())) {
-        out_buf[written] = '\0';
-    } else {
-        out_buf.back() = '\0';
-    }
-
+    // cactus_complete returns the generated token count (not byte length) and
+    // already NUL-terminates the JSON written into out_buf.
+    out_buf.back() = '\0';
     return env->NewStringUTF(out_buf.data());
 }
 
@@ -381,7 +376,7 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeCompleteAudio(
     std::vector<char> out_buf(kDefaultResponseBufferCapacity, '\0');
     int tokens = max_new_tokens > 0 ? static_cast<int>(max_new_tokens) : 512;
 
-    int written = cactus_complete(
+    int token_count = cactus_complete(
         nullptr,
         pcm_ptr,
         static_cast<int>(num_samples),
@@ -392,18 +387,15 @@ Java_com_cactus_assistant_engine_CactusNativeBridge_nativeCompleteAudio(
 
     env->ReleaseFloatArrayElements(pcm_16k_mono, pcm_ptr, JNI_ABORT);
 
-    if (written < 0) {
+    if (token_count < 0) {
         const char* err = cactus_last_error();
-        LOGE("cactus_complete(audio) failed (%d): %s", written, err ? err : "unknown");
-        return env->NewStringUTF(MakeErrorJson(err ? err : "cactus_complete audio failed", written).c_str());
+        LOGE("cactus_complete(audio) failed (%d): %s", token_count, err ? err : "unknown");
+        return env->NewStringUTF(MakeErrorJson(err ? err : "cactus_complete audio failed", token_count).c_str());
     }
 
-    if (written < static_cast<int>(out_buf.size())) {
-        out_buf[written] = '\0';
-    } else {
-        out_buf.back() = '\0';
-    }
-
+    // cactus_complete returns the generated token count (not byte length) and
+    // already NUL-terminates the JSON written into out_buf.
+    out_buf.back() = '\0';
     return env->NewStringUTF(out_buf.data());
 }
 
